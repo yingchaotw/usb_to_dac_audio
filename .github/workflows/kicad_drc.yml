@@ -1,0 +1,59 @@
+
+# KiCad Design Rule Check
+
+name: KiCad DRC
+
+# Development phase pause CI/CD 
+# on:
+#   push:
+#     branches: [ main ]
+#     paths-ignore:
+#       - 'LICENSE'
+#       - '*.md'
+
+env:
+  KICAD_PROJECT: STM32F411_USB_AUDIO_DAC_SCH
+
+jobs:
+  install_kicad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install KiCad
+        run: |
+          sudo apt update
+          sudo apt install kicad
+
+  pcb_drc:
+    runs-on: ubuntu-latest
+    needs: install_kicad
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run PCB DRC
+        run: |
+          kicad-cli pcb drc "${{ env.KICAD_PROJECT }}.kicad_pcb" --output drc_report.txt
+      - name: Check DRC results
+        run: |
+          if [ -f drc_report.txt ]; then
+            # analyze drc_report.txt file, check have a error.
+            if grep -q "ERROR" drc_report.txt; then
+              exit 1
+            fi
+          fi
+
+  sch_erc:
+    runs-on: ubuntu-latest
+    needs: install_kicad
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Schematic ERC
+        run: |
+          kicad-cli sch erc "${{ env.KICAD_PROJECT }}.kicad_sch" --output erc_report.txt
+      - name: Check ERC results
+        run: |
+          if [ -f erc_report.txt ]; then
+            # analyze erc_report.txt file, check have a error.
+            if grep -q "ERROR" erc_report.txt; then
+              exit 1
+            fi
+          fi

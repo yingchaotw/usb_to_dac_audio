@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "audio_usb2dac")(type "KiCad")(uri "${KIPRJMOD}/audio_usb2dac.pretty")(options "")(descr ""))
+)
